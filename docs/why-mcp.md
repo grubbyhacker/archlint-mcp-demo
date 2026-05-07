@@ -23,6 +23,89 @@ Another way to say it:
 
 This is why the repo exposes both. The CLI must be sufficient. MCP is useful because it makes the same policy engine easier for agents and harnesses to use early.
 
+## What the MCP Server Is Here
+
+In this repository, the MCP "server" is not a web server and does not listen on a port. It is a Node.js process that speaks the MCP protocol over standard input and standard output.
+
+```text
+MCP client / coding-agent harness
+        |
+        | starts a child process
+        v
+node dist/src/mcp.js
+        |
+        | JSON-RPC messages over stdin/stdout
+        v
+Archlint MCP tool handlers
+        |
+        v
+shared policy/evaluator code
+```
+
+The TypeScript source is `src/mcp.ts`. After build, it becomes `dist/src/mcp.js`. Running `npm run mcp` builds the project and starts that JavaScript file with Node.
+
+The process registers three MCP tools:
+
+- `list_architecture_rules`
+- `explain_policy_for_file`
+- `check_files`
+
+Then it connects those tools to a stdio transport. In practical terms, the MCP client writes protocol messages to the process's stdin, and the process writes protocol responses to stdout.
+
+That makes it a server in the protocol sense: it serves tool capabilities to an MCP client. It is not a server in the traditional web-service sense. A more literal name would be "MCP tool provider process", but the ecosystem calls this a server.
+
+## Process Lifetime
+
+The local stdio MCP server is session-scoped.
+
+Compared with a CLI:
+
+```text
+CLI:
+  process starts per command
+  does one thing
+  exits
+
+stdio MCP:
+  process starts per MCP session
+  handles many tool calls
+  exits when the client closes the session
+```
+
+So the local MCP process is longer-lived than one CLI invocation, but shorter-lived than a daemon or hosted service. The client usually starts it when the agent session begins, keeps it available for repeated tool calls, and tears it down when the session ends.
+
+That lifespan matches this repo's use case. The MCP server is just an adapter over local files and local TypeScript code. It does not need to be reachable by other users, coordinate across repositories, or retain state across agent sessions.
+
+## How the Bits Flow
+
+For `explain_policy_for_file`, the flow is:
+
+```text
+Agent
+  -> MCP client
+    -> stdin request to node dist/src/mcp.js
+      -> src/mcp.ts tool handler
+        -> src/service.ts
+          -> src/policy.ts
+            -> policies/architecture.yaml
+      <- JSON response over stdout
+  <- Agent sees tool result
+```
+
+For `check_files`, the handler does more work:
+
+```text
+MCP request
+  -> src/mcp.ts
+    -> checkRepository({ repo, files })
+      -> loadPolicy()
+      -> analyzeRepo()
+      -> evaluatePolicy()
+  -> JSON result returned through MCP
+```
+
+This is the same underlying path used by the CLI. MCP changes the interface, not the authority.
+
 ## 1. Tool Discovery
 
 An MCP client can discover available tools, descriptions, and input schemas. The agent can see that this repo exposes:
@@ -139,6 +222,98 @@ The case for MCP is about usefulness and interface quality:
 - better harness integration
 - narrower capabilities than shell
 - portability across agent clients
+
+## When a Long-Lived Service Makes Sense
+
+For this demo, a session-scoped stdio server is enough. A long-lived MCP service starts to make sense when the policy interface is no longer just a thin wrapper around files already present in the agent's workspace.
+
+That usually happens in enterprise environments.
+
+Use a long-lived service when you want centralized control:
+
+- the authoritative policy implementation should not live in every repo
+- policy versions should be managed centrally
+- agents should not be able to modify or bypass the linter implementation
+- multiple repositories should share organizational rules
+
+Use a long-lived service when checks need privileged context:
+
+- private dependency graphs
+- ownership systems
+- service catalogs
+- package registries
+- code review systems
+- historical violation data
+
+Use a long-lived service when analysis is expensive enough to benefit from caching:
+
+- repository indexes
+- dependency graphs
+- package boundary maps
+- known generated-code regions
+- baseline violations
+
+And, importantly, use a long-lived service when observability matters.
+
+A central architecture service can record:
+
+- which agent or harness asked for policy
+- which user, repo, branch, or pull request was involved
+- which files were checked
+- what violations were returned
+- whether the agent checked before editing, after editing, or only at the end
+- which rules are frequently queried
+- which rules are frequently violated
+- which agents or workflows ignore guidance until presubmit fails
+
+That data is valuable because it turns architectural guidance into an observable system. You can see whether agents are using policy early, where policy is unclear, and which boundaries generate repeated friction.
+
+In that design, the MCP server looks more like a conventional service:
+
+```text
+Agent client
+  -> remote MCP endpoint over HTTP
+    -> authenticated enterprise MCP service
+      -> policy service / evaluator
+      -> controlled repo checkout, PR diff, or submitted patch
+      -> audited result
+```
+
+Authentication and reachability become normal enterprise platform concerns: identity, network access, authorization, and audit. They matter, but they should be handled by the client, gateway, and service infrastructure rather than by giving durable credentials to the model.
+
+## Local vs Remote Inputs
+
+A local stdio server can accept local repo paths:
+
+```json
+{
+  "repo": "demo-repo",
+  "files": ["packages/web/src/accountPage.ts"]
+}
+```
+
+A remote enterprise service usually needs enterprise identifiers instead:
+
+```json
+{
+  "repo": "payments-app",
+  "ref": "feature/account-summary",
+  "files": ["packages/web/src/accountPage.ts"]
+}
+```
+
+Or it may check a pull request:
+
+```json
+{
+  "repo": "payments-app",
+  "pullRequest": 1842
+}
+```
+
+Or it may evaluate submitted file contents or a patch, letting the agent get early feedback without direct access to the server-side policy implementation.
+
+The underlying principle remains the same: the service controls the policy and evaluator, while the agent receives structured guidance and check results.
 
 ## The Practical Rule
 
