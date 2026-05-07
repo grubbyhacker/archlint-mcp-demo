@@ -1,0 +1,31 @@
+{
+  "name": "archlint-mcp-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "archlint": "./dist/src/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "archlint": "npm run build --silent && node dist/src/cli.js",
+    "archlint:check": "npm run build --silent && node dist/src/cli.js check",
+    "mcp": "npm run build --silent && node dist/src/mcp.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "commander": "14.0.3",
+    "minimatch": "10.2.5",
+    "yaml": "2.8.4",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.12.2",
+    "typescript": "5.9.3",
+    "vitest": "4.1.5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
