@@ -56,12 +56,17 @@ MCP server: agent-facing policy lookup
 - Keep MCP tools narrow and factual.
 - Keep the evaluator shared by CLI and MCP.
 - GitHub Actions should run the same `make presubmit` path used locally.
+- Documentation milestone uses Mermaid diagrams rather than generated bitmap assets.
+- Documentation milestone includes a Substack-ready follow-up draft at `docs/article-draft.md`.
+- Hypothetical agent MCP usage is documented as transcript plus exact tool call examples.
 
 ## Current State
 
 V1 implementation is complete and committed on `main`.
 
-Phase 1 MCP/Codex integration coverage and CI presubmit are implemented in the working tree.
+Phase 1 MCP/Codex integration coverage and CI presubmit are implemented.
+
+The documentation milestone is implemented in the working tree. The README is now the entry point and links to a multi-file `docs/` set covering system architecture, walkthroughs, agent MCP usage, hard enforcement, policy authoring, and a follow-up article draft.
 
 Implemented:
 
@@ -77,7 +82,9 @@ Implemented:
 - Codex CLI integration tests that register the MCP server under a temporary `CODEX_HOME`, verify `codex mcp list`, and validate the registered command with an SDK client.
 - GitHub Actions workflow that runs `npm ci` and `make presubmit`.
 - Persisted Phase 1 plan in `plans/phase1.md`.
-- README quickstart and harness explanation.
+- README quickstart, documentation entry point, and harness explanation.
+- Documentation under `docs/` explaining Architectural Linting, MCP as an adapter, and CLI/Make/CI as the hard enforcement path.
+- MIT license added for public GitHub publication.
 - Ignored generated/install directories remain `dist/` and `node_modules/`.
 
 ## Commit Stack
@@ -103,6 +110,9 @@ Implemented:
 - Added `.github/workflows/presubmit.yml`.
 - Expanded `test/mcp.test.ts`.
 - Updated `package.json` so `npm test` builds before Vitest.
+- Replaced `README.md` as the concise documentation entry point.
+- Added documentation files under `docs/`: `index.md`, `architecture.md`, `demo-walkthrough.md`, `agent-mcp-workflow.md`, `enforcement.md`, `policy-authoring.md`, and `article-draft.md`.
+- Added `LICENSE` with the MIT license and linked it from `README.md`.
 
 ## Commands Run
 
@@ -121,6 +131,16 @@ Implemented:
 - `npm run build`
 - `npm test`
 - `make presubmit`
+- `npm run archlint -- list-rules`
+- `npm run archlint -- check`
+- `npm run archlint -- check --json`
+- `npm run archlint -- explain demo-repo/packages/web/src/accountPage.ts --repo demo-repo`
+- `npm run archlint -- check --repo fixtures/failing`
+- Local Markdown link validation with a Node one-liner
+- Documentation stale-claim search with `rg`
+- `npm test`
+- `make presubmit`
+- `git diff --check`
 
 ## Tests Passing
 
@@ -131,18 +151,19 @@ Implemented:
 - `npm run archlint -- check --json`
 - `npm run archlint -- check --repo fixtures/failing --json` returns non-zero with expected violations.
 - `npm run archlint -- explain demo-repo/packages/web/src/accountPage.ts --repo demo-repo`
+- Local Markdown links in README and `docs/*.md` resolve.
+- Documentation examples match current CLI output.
 - `make presubmit`
 
 ## Suggested Next Task
 
-Begin the documentation phase. Explain in detail what the project demonstrates and why: policy as source of truth, MCP as adapter, CLI/Make/CI as enforcement, and deterministic checks as the answer to prompt-obedience-only architectural rules.
+Review and polish the documentation prose for publication voice, then optionally add a deterministic agent-style MCP demo or test that mirrors `docs/agent-mcp-workflow.md`.
 
 Deferred follow-up work:
 
 - deterministic agent-style MCP demo or test
 - `archlint check --changed-only`
 - package alias support
-- article draft
 - GitHub PR integration
 - richer import parsing or language-server integration
 

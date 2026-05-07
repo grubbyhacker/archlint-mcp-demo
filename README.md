@@ -1,20 +1,20 @@
 # Archlint MCP Demo
 
-A small TypeScript demo of architectural linting for coding agents.
+Architectural linting for coding agents: rules that agents can inspect early, and hard checks they cannot bypass at the end.
 
-The key rule is that MCP is only an adapter. The source of truth is `policies/architecture.yaml`, and enforcement happens through the same verifier used by the CLI and `make presubmit`.
+This demo is built around one invariant:
 
-```text
-architecture.yaml
-        ↓
-shared policy/evaluator library
-        ↓
-CLI: archlint check / explain
-        ↓
-Makefile: presubmit enforcement
-        ↓
-MCP server: agent-facing lookup/check adapter
+> MCP is an adapter. `policies/architecture.yaml` and the shared evaluator are the source of truth.
+
+```mermaid
+flowchart LR
+  policy["policies/architecture.yaml"] --> evaluator["shared policy/evaluator library"]
+  evaluator --> cli["CLI: archlint check / explain"]
+  cli --> make["Makefile + CI: hard enforcement"]
+  evaluator --> mcp["MCP server: agent-facing lookup/check adapter"]
 ```
+
+The MCP server helps a coding agent discover architectural rules before it writes code. The CLI, Makefile, and CI path defend the repository after code is written. This is the core Architectural Linting pattern.
 
 ## Quickstart
 
@@ -31,52 +31,27 @@ To see intentional failures:
 npm run archlint -- check --repo fixtures/failing
 ```
 
-To inspect the rule for a file:
+To inspect rules for a file:
 
 ```bash
-npm run archlint -- explain packages/web/src/accountPage.ts
+npm run archlint -- explain demo-repo/packages/web/src/accountPage.ts --repo demo-repo
 ```
 
-## CLI
-
-```bash
-npm run archlint -- check
-npm run archlint -- check --json
-npm run archlint -- check --repo fixtures/failing
-npm run archlint -- explain packages/web/src/accountPage.ts
-npm run archlint -- list-rules
-```
-
-`check` exits `0` when there are no error-level violations and non-zero when error-level violations exist.
-
-## MCP
-
-Run the MCP stdio server:
+To run the MCP stdio server:
 
 ```bash
 npm run mcp
 ```
 
-Tools exposed:
+## Documentation
 
-- `list_architecture_rules`
-- `explain_policy_for_file`
-- `check_files`
-
-These tools call the shared policy loader, analyzer, and evaluator. They do not contain independent policy logic.
-
-The test suite includes standalone stdio protocol coverage. It starts `node dist/src/mcp.js` with the MCP SDK client and calls each tool through the protocol.
-
-## Codex CLI
-
-The Codex CLI can register the MCP server as a local stdio server:
-
-```bash
-codex mcp add archlint -- node dist/src/mcp.js
-codex mcp list
-```
-
-Automated tests cover this registration flow with an isolated temporary `CODEX_HOME`, then launch the configured command through the MCP SDK client. Model-backed `codex exec` flows are intentionally left as manual smoke tests so `make presubmit` does not depend on Codex auth or model availability.
+- [Documentation index](docs/index.md)
+- [System architecture](docs/architecture.md)
+- [Demo walkthrough](docs/demo-walkthrough.md)
+- [Agent MCP workflow](docs/agent-mcp-workflow.md)
+- [Hard enforcement path](docs/enforcement.md)
+- [Policy authoring](docs/policy-authoring.md)
+- [Follow-up article draft](docs/article-draft.md)
 
 ## Project Shape
 
@@ -85,12 +60,26 @@ Automated tests cover this registration flow with an isolated temporary `CODEX_H
 - `src/analyzer.ts`: TypeScript import fact extraction.
 - `src/verifier.ts`: pure policy evaluation.
 - `src/cli.ts`: developer-facing CLI.
-- `src/mcp.ts`: MCP adapter.
-- `test/mcp.test.ts`: stdio MCP protocol coverage.
-- `test/codexCli.test.ts`: deterministic Codex CLI MCP registration coverage.
-- `demo-repo/`: passing synthetic demo repository.
+- `src/mcp.ts`: MCP adapter over the shared service.
+- `demo-repo/`: passing synthetic bank/payments repository.
 - `fixtures/failing/`: intentional violations for demos and tests.
+
+## Core Commands
+
+```bash
+npm run archlint -- check
+npm run archlint -- check --json
+npm run archlint -- check --repo fixtures/failing
+npm run archlint -- explain demo-repo/packages/web/src/accountPage.ts --repo demo-repo
+npm run archlint -- list-rules
+```
+
+`check` exits `0` when there are no error-level violations and non-zero when error-level violations exist.
 
 ## Harness Model
 
-A coding-agent harness should require `make presubmit` before accepting work as complete. The MCP server helps the agent discover constraints earlier, but the verifier is the non-optional enforcement point.
+A coding-agent harness should require `make presubmit` before accepting work as complete. MCP gives the agent earlier visibility into the rules, but the verifier is the non-optional enforcement point.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
