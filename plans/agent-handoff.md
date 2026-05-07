@@ -117,12 +117,15 @@ Implemented:
 
 ## Suggested Next Task
 
-Pick one deferred follow-up and keep it similarly small. The best next implementation task is a CI workflow that runs `make presubmit`, because it reinforces the core thesis without expanding the analyzer scope.
+Plan a small, deterministic MCP integration/demo layer showing how an agent-facing client would query the MCP server before enforcement. Current MCP coverage only verifies that `createArchlintMcpServer()` constructs successfully; there is no protocol-level stdio MCP client test, no Codex CLI/harness simulation, and no deterministic agent-style flow that queries MCP before `make presubmit`.
+
+Prefer testing MCP protocol calls directly with an SDK client. Treat real Codex CLI usage as optional documentation or a manual demo because it is likely too environment-dependent for presubmit.
 
 Deferred follow-up work:
 
 - CI workflow running `make presubmit`
 - stronger MCP integration tests beyond adapter construction
+- deterministic agent-style MCP demo or test
 - `archlint check --changed-only`
 - package alias support
 - article draft
