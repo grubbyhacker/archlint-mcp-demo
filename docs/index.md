@@ -6,9 +6,11 @@ It is designed as a concrete follow-up to Roger Fleig's Substack essay, [The Cas
 
 The implementation is intentionally small. It is not a general static analyzer, a pull-request bot, or an architecture inference system. It shows a production-shaped pattern in miniature:
 
-```text
-architecture policy -> shared evaluator -> CLI/Make/CI enforcement
-                                      -> MCP adapter for agents
+```mermaid
+flowchart LR
+  policy["architecture policy"] --> evaluator["shared evaluator"]
+  evaluator --> enforcement["CLI / Make / CI enforcement"]
+  evaluator --> mcp["MCP adapter for agents"]
 ```
 
 ## Reading Order
