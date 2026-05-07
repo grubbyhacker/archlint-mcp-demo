@@ -49,15 +49,19 @@ MCP server: agent-facing policy lookup
 - Make `archlint check` default to `demo-repo/`, with `--repo` available for explicit checks.
 - Use Vitest for tests.
 - Use stable `@modelcontextprotocol/sdk` v1.29.0 over stdio for the MCP adapter.
+- Treat automated Codex CLI coverage as deterministic MCP registration/config validation, not a model-authenticated `codex exec` run.
 - Avoid symbol-level analysis.
 - Avoid GitHub authentication.
 - Avoid risk scoring in the initial design.
 - Keep MCP tools narrow and factual.
 - Keep the evaluator shared by CLI and MCP.
+- GitHub Actions should run the same `make presubmit` path used locally.
 
 ## Current State
 
 V1 implementation is complete and committed on `main`.
+
+Phase 1 MCP/Codex integration coverage and CI presubmit are implemented in the working tree.
 
 Implemented:
 
@@ -69,8 +73,12 @@ Implemented:
 - Passing `demo-repo/`.
 - Intentional failing examples under `fixtures/failing/`.
 - MCP stdio adapter exposing `list_architecture_rules`, `explain_policy_for_file`, and `check_files`.
+- Standalone MCP protocol tests that spawn `node dist/src/mcp.js` and call each tool through the SDK client.
+- Codex CLI integration tests that register the MCP server under a temporary `CODEX_HOME`, verify `codex mcp list`, and validate the registered command with an SDK client.
+- GitHub Actions workflow that runs `npm ci` and `make presubmit`.
+- Persisted Phase 1 plan in `plans/phase1.md`.
 - README quickstart and harness explanation.
-- Current working tree is clean except ignored generated/install directories: `dist/` and `node_modules/`.
+- Ignored generated/install directories remain `dist/` and `node_modules/`.
 
 ## Commit Stack
 
@@ -90,6 +98,11 @@ Implemented:
 - Added `policies/architecture.yaml`.
 - Added `demo-repo/` and `fixtures/failing/`.
 - Updated `README.md` and this handoff file.
+- Added `plans/phase1.md`.
+- Added `test/mcpClient.ts` and `test/codexCli.test.ts`.
+- Added `.github/workflows/presubmit.yml`.
+- Expanded `test/mcp.test.ts`.
+- Updated `package.json` so `npm test` builds before Vitest.
 
 ## Commands Run
 
@@ -105,11 +118,16 @@ Implemented:
 - `npm run archlint -- list-rules`
 - `npm ls --depth=0`
 - `make presubmit`
+- `npm run build`
+- `npm test`
+- `make presubmit`
 
 ## Tests Passing
 
 - `npm test`
 - `npm run build`
+- MCP stdio protocol tests call `list_architecture_rules`, `explain_policy_for_file`, and `check_files`.
+- Codex CLI integration test passes when `codex` is available; it is skipped if the executable is unavailable.
 - `npm run archlint -- check --json`
 - `npm run archlint -- check --repo fixtures/failing --json` returns non-zero with expected violations.
 - `npm run archlint -- explain demo-repo/packages/web/src/accountPage.ts --repo demo-repo`
@@ -117,14 +135,10 @@ Implemented:
 
 ## Suggested Next Task
 
-Plan a small, deterministic MCP integration/demo layer showing how an agent-facing client would query the MCP server before enforcement. Current MCP coverage only verifies that `createArchlintMcpServer()` constructs successfully; there is no protocol-level stdio MCP client test, no Codex CLI/harness simulation, and no deterministic agent-style flow that queries MCP before `make presubmit`.
-
-Prefer testing MCP protocol calls directly with an SDK client. Treat real Codex CLI usage as optional documentation or a manual demo because it is likely too environment-dependent for presubmit.
+Begin the documentation phase. Explain in detail what the project demonstrates and why: policy as source of truth, MCP as adapter, CLI/Make/CI as enforcement, and deterministic checks as the answer to prompt-obedience-only architectural rules.
 
 Deferred follow-up work:
 
-- CI workflow running `make presubmit`
-- stronger MCP integration tests beyond adapter construction
 - deterministic agent-style MCP demo or test
 - `archlint check --changed-only`
 - package alias support
@@ -137,7 +151,7 @@ Deferred follow-up work:
 - Import extraction is intentionally simple and static.
 - Package aliases are intentionally unsupported in v1.
 - Escalation metadata is preserved/displayed, not enforced as an approval workflow.
-- MCP tests cover adapter construction; they do not perform a full protocol-level stdio integration test.
+- Model-backed Codex CLI flows are intentionally not in presubmit because they can require auth and network/model availability.
 
 ## Non-Negotiable Invariants
 

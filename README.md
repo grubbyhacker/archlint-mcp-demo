@@ -65,6 +65,19 @@ Tools exposed:
 
 These tools call the shared policy loader, analyzer, and evaluator. They do not contain independent policy logic.
 
+The test suite includes standalone stdio protocol coverage. It starts `node dist/src/mcp.js` with the MCP SDK client and calls each tool through the protocol.
+
+## Codex CLI
+
+The Codex CLI can register the MCP server as a local stdio server:
+
+```bash
+codex mcp add archlint -- node dist/src/mcp.js
+codex mcp list
+```
+
+Automated tests cover this registration flow with an isolated temporary `CODEX_HOME`, then launch the configured command through the MCP SDK client. Model-backed `codex exec` flows are intentionally left as manual smoke tests so `make presubmit` does not depend on Codex auth or model availability.
+
 ## Project Shape
 
 - `policies/architecture.yaml`: architecture rules and metadata.
@@ -73,6 +86,8 @@ These tools call the shared policy loader, analyzer, and evaluator. They do not 
 - `src/verifier.ts`: pure policy evaluation.
 - `src/cli.ts`: developer-facing CLI.
 - `src/mcp.ts`: MCP adapter.
+- `test/mcp.test.ts`: stdio MCP protocol coverage.
+- `test/codexCli.test.ts`: deterministic Codex CLI MCP registration coverage.
 - `demo-repo/`: passing synthetic demo repository.
 - `fixtures/failing/`: intentional violations for demos and tests.
 

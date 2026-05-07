@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
+    "test": "npm run build --silent && vitest run",
     "archlint": "npm run build --silent && node dist/src/cli.js",
     "archlint:check": "npm run build --silent && node dist/src/cli.js check",
     "mcp": "npm run build --silent && node dist/src/mcp.js"
