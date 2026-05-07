@@ -1,0 +1,42 @@
+rules:
+  - id: web-cannot-import-ledger
+    from: "packages/web/**"
+    disallowImports:
+      - "packages/ledger/**"
+    reason: "Browser-facing code must not depend on ledger internals."
+    suggestedFixes:
+      - "Call packages/api instead."
+      - "Use packages/contracts for shared types."
+    severity: error
+    requiredChecks:
+      - "npm test"
+      - "npm run archlint:check"
+    escalation:
+      required: true
+      reviewGroups:
+        - platform
+        - security
+      reason: "Ledger access from browser-facing code requires explicit architectural review."
+
+  - id: api-cannot-import-web
+    from: "packages/api/**"
+    disallowImports:
+      - "packages/web/**"
+    reason: "Server API must not depend on browser/UI code."
+    suggestedFixes:
+      - "Move shared logic into packages/contracts."
+      - "Expose behavior through an API boundary."
+    severity: error
+
+  - id: contracts-cannot-import-runtime
+    from: "packages/contracts/**"
+    disallowImports:
+      - "packages/web/**"
+      - "packages/api/**"
+      - "packages/auth/**"
+      - "packages/ledger/**"
+    reason: "Contracts must remain pure shared schema/types."
+    suggestedFixes:
+      - "Move runtime behavior out of contracts."
+      - "Keep contracts limited to types and schemas."
+    severity: error
