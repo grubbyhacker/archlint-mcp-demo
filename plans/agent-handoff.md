@@ -57,6 +57,8 @@ MCP server: agent-facing policy lookup
 
 ## Current State
 
+V1 implementation is complete and committed on `main`.
+
 Implemented:
 
 - TypeScript project tooling, npm scripts, and `Makefile`.
@@ -68,6 +70,17 @@ Implemented:
 - Intentional failing examples under `fixtures/failing/`.
 - MCP stdio adapter exposing `list_architecture_rules`, `explain_policy_for_file`, and `check_files`.
 - README quickstart and harness explanation.
+- Current working tree is clean except ignored generated/install directories: `dist/` and `node_modules/`.
+
+## Commit Stack
+
+- `4b23e55` Add project planning baseline
+- `42e830c` Initialize TypeScript project tooling
+- `9c6c3d9` Implement policy evaluator
+- `bf15eda` Add demo repo and import analyzer
+- `68b097d` Implement archlint CLI
+- `810f7a4` Add MCP adapter
+- `f6daac6` Document enforcement workflow
 
 ## Files Changed
 
@@ -104,13 +117,14 @@ Implemented:
 
 ## Suggested Next Task
 
-Run final acceptance checks and commit in reviewable phases if desired.
+Pick one deferred follow-up and keep it similarly small. The best next implementation task is a CI workflow that runs `make presubmit`, because it reinforces the core thesis without expanding the analyzer scope.
 
 Deferred follow-up work:
 
+- CI workflow running `make presubmit`
+- stronger MCP integration tests beyond adapter construction
 - `archlint check --changed-only`
 - package alias support
-- CI workflow
 - article draft
 - GitHub PR integration
 - richer import parsing or language-server integration
@@ -119,6 +133,7 @@ Deferred follow-up work:
 
 - Import extraction is intentionally simple and static.
 - Package aliases are intentionally unsupported in v1.
+- Escalation metadata is preserved/displayed, not enforced as an approval workflow.
 - MCP tests cover adapter construction; they do not perform a full protocol-level stdio integration test.
 
 ## Non-Negotiable Invariants
