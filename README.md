@@ -47,6 +47,7 @@ npm run mcp
 
 - [Documentation index](docs/index.md)
 - [System architecture](docs/architecture.md)
+- [Why MCP instead of just a CLI?](docs/why-mcp.md)
 - [Demo walkthrough](docs/demo-walkthrough.md)
 - [Agent MCP workflow](docs/agent-mcp-workflow.md)
 - [Hard enforcement path](docs/enforcement.md)

@@ -16,11 +16,12 @@ flowchart LR
 ## Reading Order
 
 1. [System architecture](architecture.md) explains the components and why MCP is not the source of truth.
-2. [Demo walkthrough](demo-walkthrough.md) shows the fake bank/payments repository, passing checks, and intentional failures.
-3. [Agent MCP workflow](agent-mcp-workflow.md) shows how a coding agent should query policy before and after code generation.
-4. [Hard enforcement path](enforcement.md) explains how the same logic defends the codebase through CLI, Make, and CI.
-5. [Policy authoring](policy-authoring.md) documents the current policy schema and how to add rules safely.
-6. [Follow-up article draft](article-draft.md) is a publication-oriented narrative derived from the demo.
+2. [Why MCP instead of just a CLI?](why-mcp.md) frames the interface debate for agent-facing guidance.
+3. [Demo walkthrough](demo-walkthrough.md) shows the fake bank/payments repository, passing checks, and intentional failures.
+4. [Agent MCP workflow](agent-mcp-workflow.md) shows how a coding agent should query policy before and after code generation.
+5. [Hard enforcement path](enforcement.md) explains how the same logic defends the codebase through CLI, Make, and CI.
+6. [Policy authoring](policy-authoring.md) documents the current policy schema and how to add rules safely.
+7. [Follow-up article draft](article-draft.md) is a publication-oriented narrative derived from the demo.
 
 ## The Thesis
 
